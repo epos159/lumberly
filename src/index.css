@@ -243,6 +243,16 @@ body {
   margin-top: 0.25rem;
 }
 
+.spacing-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.spacing-grid .field {
+  margin-bottom: 0;
+}
+
 .roof-fields {
   display: flex;
   flex-wrap: wrap;

@@ -2,7 +2,7 @@
 
 Lumber package takeoff tool for stick framing. Generates material lists for estimators to submit to lumber yards.
 
-**Live at:** [estimates.poschventures.com](https://estimates.poschventures.com)
+**Live at:** [lumberly.poschventures.com](https://lumberly.poschventures.com)
 
 ---
 
@@ -35,7 +35,7 @@ Output goes to `dist/`.
 4. Build settings:
    - **Build command:** `npm run build`
    - **Build output directory:** `dist`
-5. After deploy, add custom domain: **estimates.poschventures.com**
+5. After deploy, add custom domain: **lumberly.poschventures.com**
 
 ---
 

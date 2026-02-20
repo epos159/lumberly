@@ -47,22 +47,28 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
   const spanIn = joistsAlongWidth ? lengthIn : widthIn
   const runIn = joistsAlongWidth ? widthIn : lengthIn
 
-  const spacing = input.studSpacing ?? 16
-  const numJoists = Math.ceil(runIn / spacing) + 1
+  const floorSpacing = input.floorSpacing ?? 16
+  const wallSpacing = input.wallSpacing ?? 16
+  const roofSpacing = input.roofSpacing ?? 16
+
+  const numJoists = Math.ceil(runIn / floorSpacing) + 1
   const joistLengthFt = Math.ceil(toFeet(spanIn + 6) / 2) * 2 || 10
+  const hasSecondFloor = input.includeSecondFloor === true
+
   materials.push({
-    description: `2x10 x ${joistLengthFt}' floor joists`,
+    description: `2x10 x ${joistLengthFt}' ${hasSecondFloor ? '1st floor ' : ''}floor joists`,
     quantity: numJoists,
     unit: 'pcs',
-    notes: '16" OC, span table dependent',
+    notes: `${floorSpacing}" OC, span table dependent`,
   })
 
-  // Rim/band joist - perimeter
+  // Rim/band joist - perimeter (PT when at grade)
+  const ptRim = input.ptRimJoistAtGrade === true
   materials.push({
-    description: '2x10 rim joist',
+    description: `2x10 ${ptRim ? 'PT ' : ''}${hasSecondFloor ? '1st floor ' : ''}rim joist`,
     quantity: Math.ceil(perimeterFt),
     unit: 'lin ft',
-    notes: input.isAddition ? '3 walls (addition)' : undefined,
+    notes: ptRim ? 'Pressure-treated, at grade' : input.isAddition ? '3 walls (addition)' : undefined,
   })
 
   // Subfloor - 4x8 sheets
@@ -71,54 +77,80 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
   const wasteFactor = 1 + wastePct / 100
   const numSheets = Math.ceil((areaSqFt * wasteFactor) / sheetArea)
   materials.push({
-    description: '4x8 OSB/plywood subfloor',
+    description: `4x8 OSB/plywood ${hasSecondFloor ? '1st floor ' : ''}subfloor`,
     quantity: numSheets,
     unit: 'sheets',
     notes: `3/4" T&G, ~${wastePct}% waste`,
   })
 
-  // Exterior walls (2x6)
+  // Second floor framing
+  if (hasSecondFloor) {
+    materials.push({
+      description: `2x10 x ${joistLengthFt}' 2nd floor joists`,
+      quantity: numJoists,
+      unit: 'pcs',
+      notes: `${floorSpacing}" OC, span table dependent`,
+    })
+    materials.push({
+      description: '2x10 2nd floor rim joist',
+      quantity: Math.ceil(perimeterFt),
+      unit: 'lin ft',
+      notes: input.isAddition ? '3 walls (addition)' : undefined,
+    })
+    materials.push({
+      description: '4x8 OSB/plywood 2nd floor subfloor',
+      quantity: numSheets,
+      unit: 'sheets',
+      notes: `3/4" T&G, ~${wastePct}% waste`,
+    })
+  }
+
+  // Exterior walls (2x6) - double for 2-story
   const perimeterIn = perimeterFt * 12
-  const exteriorStudCount = Math.ceil(perimeterIn / spacing) + 4
+  const exteriorStudCount = Math.ceil(perimeterIn / wallSpacing) + 4
+  const exteriorStudMultiplier = hasSecondFloor ? 2 : 1
   const maxCeilingHeight = Math.max(
     ...input.rooms.map((r) => r.ceilingHeightFt),
     8
   )
   materials.push({
     description: `2x6 x ${maxCeilingHeight}' exterior wall studs`,
-    quantity: exteriorStudCount,
+    quantity: exteriorStudCount * exteriorStudMultiplier,
     unit: 'pcs',
     notes: input.isAddition
-      ? `${spacing}" OC, 3 walls (addition)`
-      : `${spacing}" OC, perimeter`,
+      ? `${wallSpacing}" OC, ${hasSecondFloor ? '2 stories, 3 walls (addition)' : '3 walls (addition)'}`
+      : `${wallSpacing}" OC, ${hasSecondFloor ? '2 stories' : 'perimeter'}`,
   })
 
-  // Exterior plates (2x6, double top)
-  const exteriorPlateLinealFt = perimeterFt * 3
+  // Exterior plates (2x6, double top) - 6 courses for 2-story vs 3 for 1-story
+  const exteriorPlateCourses = hasSecondFloor ? 6 : 3
+  const exteriorPlateLinealFt = perimeterFt * exteriorPlateCourses
   materials.push({
     description: `2x6 x 8' exterior top & bottom plates`,
     quantity: Math.ceil(exteriorPlateLinealFt / 8),
     unit: 'pcs',
-    notes: input.isAddition ? 'Double top plate, 3 walls (addition)' : 'Double top plate',
+    notes: input.isAddition ? `Double top plate, ${hasSecondFloor ? '2 stories, ' : ''}3 walls (addition)` : hasSecondFloor ? 'Double top plate, 2 stories' : 'Double top plate',
   })
 
-  // Partition walls (2x4) - each partition counted by 2 rooms, so divide by 2
+  // Partition walls (2x4) - each partition counted by 2 rooms, so divide by 2; double for 2-story
   const totalPartitionLinealFt =
     input.rooms.reduce((sum, r) => sum + partitionLinealFt(r), 0) / 2
   if (totalPartitionLinealFt > 0) {
-    const partitionStudCount = Math.ceil((totalPartitionLinealFt * 12) / spacing) + 4
+    const partitionStudCount = Math.ceil((totalPartitionLinealFt * 12) / wallSpacing) + 4
+    const partitionMultiplier = hasSecondFloor ? 2 : 1
     materials.push({
       description: `2x4 x ${maxCeilingHeight}' partition wall studs`,
-      quantity: partitionStudCount,
+      quantity: partitionStudCount * partitionMultiplier,
       unit: 'pcs',
-      notes: `${spacing}" OC, interior partitions`,
+      notes: `${wallSpacing}" OC, interior partitions${hasSecondFloor ? ', 2 stories' : ''}`,
     })
-    const partitionPlateLinealFt = totalPartitionLinealFt * 3
+    const partitionPlateCourses = hasSecondFloor ? 6 : 3
+    const partitionPlateLinealFt = totalPartitionLinealFt * partitionPlateCourses
     materials.push({
       description: `2x4 x 8' partition top & bottom plates`,
       quantity: Math.ceil(partitionPlateLinealFt / 8),
       unit: 'pcs',
-      notes: 'Double top plate',
+      notes: hasSecondFloor ? 'Double top plate, 2 stories' : 'Double top plate',
     })
   }
 
@@ -142,7 +174,7 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
       unit: 'pcs',
     })
     if (sillHeightIn > 0) {
-      const cripplesBelow = Math.ceil(openingWidthIn / spacing) + 1
+      const cripplesBelow = Math.ceil(openingWidthIn / wallSpacing) + 1
       const sillPlateLength = openingWidthIn + 6
       materials.push({
         description: `  Cripple studs below sill`,
@@ -161,7 +193,12 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
   // Roof framing (stick-built)
   if (input.roof?.includeRoof) {
     const roof = input.roof
-    const ridgeAlongLength = roof.ridgeDirection === 'length'
+    // Reverse gable: rafters run perpendicular to floor joists
+    const effectiveRidgeDirection =
+      roof.reverseGable === true
+        ? (input.joistDirection === 'along-width' ? 'width' : 'length')
+        : roof.ridgeDirection
+    const ridgeAlongLength = effectiveRidgeDirection === 'length'
     const spanDimFt = ridgeAlongLength ? widthFt : lengthFt
     const ridgeLengthFt = ridgeAlongLength ? lengthFt : widthFt
     const overhangFt = roof.overhang / 12
@@ -180,11 +217,11 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
     if (roof.roofType === 'gable') {
       const halfSpanFt = spanDimFt / 2
       rafterRunFt = halfSpanFt + overhangFt
-      const rafterSpaces = Math.ceil((ridgeLengthFt * 12) / spacing)
+      const rafterSpaces = Math.ceil((ridgeLengthFt * 12) / roofSpacing)
       rafterCount = (rafterSpaces + 1) * 2
     } else {
       rafterRunFt = spanDimFt + overhangFt
-      const rafterSpaces = Math.ceil((ridgeLengthFt * 12) / spacing)
+      const rafterSpaces = Math.ceil((ridgeLengthFt * 12) / roofSpacing)
       rafterCount = rafterSpaces + 1
     }
 
@@ -195,7 +232,7 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
       description: `${roof.rafterSize} x ${rafterLengthOrder}' rafters`,
       quantity: rafterCount,
       unit: 'pcs',
-      notes: `${roof.roofType}, ${roof.pitch}/12, ${spacing}" OC`,
+      notes: `${roof.roofType}, ${roof.pitch}/12, ${roofSpacing}" OC${roof.reverseGable ? ', reverse gable' : ''}`,
     })
 
     if (roof.roofType === 'gable' && roof.ridgeBoard) {
@@ -223,13 +260,13 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
 
     if (roof.ceilingType === 'flat') {
       const joistSpanFt = spanDimFt
-      const joistCount = Math.ceil((ridgeLengthFt * 12) / spacing) + 1
+      const joistCount = Math.ceil((ridgeLengthFt * 12) / roofSpacing) + 1
       const joistLengthOrder = Math.ceil(joistSpanFt / 2) * 2 || 10
       materials.push({
         description: `2x6 x ${joistLengthOrder}' ceiling joists`,
         quantity: joistCount,
         unit: 'pcs',
-        notes: `${spacing}" OC, flat ceiling`,
+        notes: `${roofSpacing}" OC, flat ceiling`,
       })
     }
   }

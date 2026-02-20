@@ -273,12 +273,16 @@ interface FormState {
   overallWidthIn: number
   isAddition: boolean
   tieInDirection: 'length' | 'width'
-  studSpacing: 12 | 16
+  floorSpacing: 12 | 16 | 24
+  wallSpacing: 12 | 16 | 24
+  roofSpacing: 12 | 16 | 24
   joistDirection: 'along-length' | 'along-width'
   roof: ProjectInput['roof']
   openings: Opening[]
   projectName: string
   wasteFactorPct: number
+  includeSecondFloor: boolean
+  ptRimJoistAtGrade: boolean
 }
 
 function getDefaultState(): FormState {
@@ -300,12 +304,16 @@ function getDefaultState(): FormState {
     overallWidthIn: 0,
     isAddition: false,
     tieInDirection: 'width',
-    studSpacing: 16,
+    floorSpacing: 16,
+    wallSpacing: 16,
+    roofSpacing: 16,
     joistDirection: 'along-width',
     roof: { ...defaultRoof },
     openings: [],
     projectName: '',
     wasteFactorPct: 10,
+    includeSecondFloor: false,
+    ptRimJoistAtGrade: false,
   }
 }
 
@@ -333,6 +341,11 @@ function loadState(): FormState {
         roof: { ...defaultRoof, ...parsed.roof },
         projectName: typeof parsed.projectName === 'string' ? parsed.projectName : '',
         wasteFactorPct: typeof parsed.wasteFactorPct === 'number' ? Math.max(0, Math.min(50, parsed.wasteFactorPct)) : 10,
+        includeSecondFloor: parsed.includeSecondFloor === true,
+        ptRimJoistAtGrade: parsed.ptRimJoistAtGrade === true,
+        floorSpacing: [12, 16, 24].includes(parsed.floorSpacing as number) ? parsed.floorSpacing as 12 | 16 | 24 : (parsed.studSpacing === 12 || parsed.studSpacing === 16 ? parsed.studSpacing : 16),
+        wallSpacing: [12, 16, 24].includes(parsed.wallSpacing as number) ? parsed.wallSpacing as 12 | 16 | 24 : (parsed.studSpacing === 12 || parsed.studSpacing === 16 ? parsed.studSpacing : 16),
+        roofSpacing: [12, 16, 24].includes(parsed.roofSpacing as number) ? parsed.roofSpacing as 12 | 16 | 24 : (parsed.studSpacing === 12 || parsed.studSpacing === 16 ? parsed.studSpacing : 16),
       }
     }
   } catch { /* ignore */ }
@@ -348,12 +361,16 @@ export default function ProjectForm({ onSubmit }: ProjectFormProps) {
   const [overallWidthIn, setOverallWidthIn] = useState(initialState.overallWidthIn)
   const [isAddition, setIsAddition] = useState(initialState.isAddition)
   const [tieInDirection, setTieInDirection] = useState<'length' | 'width'>(initialState.tieInDirection)
-  const [studSpacing, setStudSpacing] = useState<12 | 16>(initialState.studSpacing)
+  const [floorSpacing, setFloorSpacing] = useState<12 | 16 | 24>(initialState.floorSpacing)
+  const [wallSpacing, setWallSpacing] = useState<12 | 16 | 24>(initialState.wallSpacing)
+  const [roofSpacing, setRoofSpacing] = useState<12 | 16 | 24>(initialState.roofSpacing)
   const [joistDirection, setJoistDirection] = useState<'along-length' | 'along-width'>(initialState.joistDirection)
   const [roof, setRoof] = useState<ProjectInput['roof']>(initialState.roof)
   const [openings, setOpenings] = useState<Opening[]>(initialState.openings)
   const [projectName, setProjectName] = useState(initialState.projectName)
   const [wasteFactorPct, setWasteFactorPct] = useState(initialState.wasteFactorPct)
+  const [includeSecondFloor, setIncludeSecondFloor] = useState(initialState.includeSecondFloor)
+  const [ptRimJoistAtGrade, setPtRimJoistAtGrade] = useState(initialState.ptRimJoistAtGrade)
   const [validationError, setValidationError] = useState<string | null>(null)
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -366,17 +383,21 @@ export default function ProjectForm({ onSubmit }: ProjectFormProps) {
       overallWidthIn,
       isAddition,
       tieInDirection,
-      studSpacing,
+      floorSpacing,
+      wallSpacing,
+      roofSpacing,
       joistDirection,
       roof,
       openings,
       projectName,
       wasteFactorPct,
+      includeSecondFloor,
+      ptRimJoistAtGrade,
     }
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
     } catch { /* ignore */ }
-  }, [rooms, overallLengthFt, overallLengthIn, overallWidthFt, overallWidthIn, isAddition, tieInDirection, studSpacing, joistDirection, roof, openings, projectName, wasteFactorPct])
+  }, [rooms, overallLengthFt, overallLengthIn, overallWidthFt, overallWidthIn, isAddition, tieInDirection, floorSpacing, wallSpacing, roofSpacing, joistDirection, roof, openings, projectName, wasteFactorPct, includeSecondFloor, ptRimJoistAtGrade])
 
   useEffect(() => {
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
@@ -424,11 +445,15 @@ export default function ProjectForm({ onSubmit }: ProjectFormProps) {
       overallWidthIn,
       isAddition,
       tieInDirection,
-      studSpacing,
+      floorSpacing,
+      wallSpacing,
+      roofSpacing,
       joistDirection,
       roof,
       openings,
       wasteFactorPct,
+      includeSecondFloor,
+      ptRimJoistAtGrade,
     })
   }
 
@@ -542,6 +567,16 @@ export default function ProjectForm({ onSubmit }: ProjectFormProps) {
             Addition (tie-in to existing)
           </label>
         </div>
+        <div className="radio-group" style={{ marginTop: '0.75rem' }}>
+          <label>
+            <input
+              type="checkbox"
+              checked={includeSecondFloor}
+              onChange={(e) => setIncludeSecondFloor(e.target.checked)}
+            />
+            Add second floor
+          </label>
+        </div>
         {isAddition && (
           <div className="field" style={{ marginTop: '0.75rem' }}>
             <label>Tie-in wall runs along</label>
@@ -562,6 +597,17 @@ export default function ProjectForm({ onSubmit }: ProjectFormProps) {
       <fieldset className="form-section">
         <legend>Overall footprint</legend>
         <p className="field-hint">Used for floor framing (joists, subfloor, rim). Auto-filled from Room 1 when single room.</p>
+        <div className="radio-group" style={{ marginBottom: '1rem' }}>
+          <label>
+            <input
+              type="checkbox"
+              checked={ptRimJoistAtGrade}
+              onChange={(e) => setPtRimJoistAtGrade(e.target.checked)}
+            />
+            PT rim joist at grade
+          </label>
+          <span className="field-hint-inline">Pressure-treated for ground contact</span>
+        </div>
         <DimensionInput
           label="Length"
           feet={overallLengthFt}
@@ -580,27 +626,32 @@ export default function ProjectForm({ onSubmit }: ProjectFormProps) {
 
       <fieldset className="form-section">
         <legend>Framing spacing</legend>
-        <div className="radio-group">
-          <label>
-            <input
-              type="radio"
-              name="studSpacing"
-              checked={studSpacing === 16}
-              onChange={() => setStudSpacing(16)}
-            />
-            16″ OC (default)
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="studSpacing"
-              checked={studSpacing === 12}
-              onChange={() => setStudSpacing(12)}
-            />
-            12″ OC
-          </label>
+        <div className="spacing-grid">
+          <div className="field">
+            <label>Floor joists</label>
+            <select value={floorSpacing} onChange={(e) => setFloorSpacing(parseInt(e.target.value, 10) as 12 | 16 | 24)}>
+              <option value={12}>12″ OC</option>
+              <option value={16}>16″ OC</option>
+              <option value={24}>24″ OC</option>
+            </select>
+          </div>
+          <div className="field">
+            <label>Wall studs</label>
+            <select value={wallSpacing} onChange={(e) => setWallSpacing(parseInt(e.target.value, 10) as 12 | 16 | 24)}>
+              <option value={12}>12″ OC</option>
+              <option value={16}>16″ OC</option>
+              <option value={24}>24″ OC</option>
+            </select>
+          </div>
+          <div className="field">
+            <label>Roof (rafters / ceiling joists)</label>
+            <select value={roofSpacing} onChange={(e) => setRoofSpacing(parseInt(e.target.value, 10) as 12 | 16 | 24)}>
+              <option value={12}>12″ OC</option>
+              <option value={16}>16″ OC</option>
+              <option value={24}>24″ OC</option>
+            </select>
+          </div>
         </div>
-        <p className="field-hint">Applies to floor joists, wall studs, rafters, ceiling joists</p>
         <div className="field" style={{ marginTop: '0.75rem' }}>
           <label htmlFor="waste-factor">Waste factor</label>
           <select
@@ -680,6 +731,16 @@ export default function ProjectForm({ onSubmit }: ProjectFormProps) {
                   <option value={6}>6/12</option>
                 </select>
               </div>
+              <div className="radio-group" style={{ marginBottom: '0.5rem' }}>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={roof.reverseGable === true}
+                    onChange={(e) => setRoof({ ...roof, reverseGable: e.target.checked })}
+                  />
+                  Reverse gable (rafters perpendicular to floor joists)
+                </label>
+              </div>
               <div className="field">
                 <label>Ridge runs along</label>
                 <select
@@ -687,10 +748,14 @@ export default function ProjectForm({ onSubmit }: ProjectFormProps) {
                   onChange={(e) =>
                     setRoof({ ...roof, ridgeDirection: e.target.value as RidgeDirection })
                   }
+                  disabled={roof.reverseGable === true}
                 >
                   <option value="length">Length</option>
                   <option value="width">Width</option>
                 </select>
+                {roof.reverseGable && (
+                  <span className="field-hint-inline">Auto-set when reverse gable</span>
+                )}
               </div>
               <div className="field">
                 <label>Overhang</label>

@@ -33,7 +33,7 @@ export interface Opening {
 
 export type TieInDirection = 'length' | 'width'
 
-export type StudSpacing = 12 | 16
+export type FramingSpacing = 12 | 16 | 24
 
 export type RoofType = 'shed' | 'gable'
 export type RoofPitch = 3 | 4 | 5 | 6
@@ -47,6 +47,7 @@ export interface RoofConfig {
   roofType: RoofType
   pitch: RoofPitch
   ridgeDirection: RidgeDirection
+  reverseGable?: boolean
   overhang: OverhangInches
   rafterSize: RafterSize
   ridgeBoard: boolean
@@ -62,11 +63,15 @@ export interface ProjectInput {
   overallWidthIn: number
   isAddition: boolean
   tieInDirection: TieInDirection
-  studSpacing: StudSpacing
+  floorSpacing: FramingSpacing
+  wallSpacing: FramingSpacing
+  roofSpacing: FramingSpacing
   joistDirection: JoistDirection
   roof: RoofConfig
   openings: Opening[]
   wasteFactorPct?: number
+  includeSecondFloor?: boolean
+  ptRimJoistAtGrade?: boolean
 }
 
 export interface MaterialItem {
