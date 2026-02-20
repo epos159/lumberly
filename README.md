@@ -1,4 +1,4 @@
-# Estimator's Friend
+# Lumberly
 
 Lumber package takeoff tool for stick framing. Generates material lists for estimators to submit to lumber yards.
 
@@ -43,4 +43,7 @@ Output goes to `dist/`.
 
 - `src/App.tsx` – Main app
 - `src/index.css` – Global styles
+- `src/components/` – ProjectForm, MaterialList
+- `src/utils/` – calculations, export
+- `src/types.ts` – Shared types
 - `index.html` – Entry HTML

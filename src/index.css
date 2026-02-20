@@ -30,6 +30,15 @@ body {
   margin-bottom: 2rem;
 }
 
+.app-banner {
+  width: 100%;
+  max-width: 800px;
+  height: auto;
+  margin: 0 auto 0.5rem;
+  display: block;
+  border-radius: 8px;
+}
+
 .app-header h1 {
   font-size: 1.75rem;
   font-weight: 700;
@@ -50,17 +59,396 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.welcome {
-  color: #444;
+/* Form */
+.project-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.welcome p {
+.form-section {
+  border: none;
+  padding: 0;
+}
+
+.form-section legend {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.75rem;
+}
+
+.field {
   margin-bottom: 1rem;
 }
 
-.coming-soon {
-  font-style: italic;
+.field label {
+  display: block;
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 0.35rem;
+}
+
+.field-hint {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.75rem;
+}
+
+.dimension-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.dimension-inputs input {
+  width: 4rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.dimension-sep {
   color: #888;
+  font-size: 0.9rem;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.radio-group input[type='radio'] {
+  width: 1rem;
+  height: 1rem;
+}
+
+.field select {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  min-width: 8rem;
+}
+
+.opening-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.opening-row select {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+.opening-qty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.opening-qty label {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.opening-qty input {
+  width: 2.5rem;
+  padding: 0.4rem;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+.opening-dimension {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.opening-dim-label {
+  font-size: 0.8rem;
+  color: #666;
+  min-width: 1rem;
+}
+
+.opening-row input {
+  width: 2.75rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+.btn-add {
+  padding: 0.5rem 1rem;
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.btn-add:hover {
+  background: #e5e5e5;
+}
+
+.room-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.room-label {
+  font-weight: 600;
+  color: #333;
+  min-width: 4rem;
+}
+
+.room-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  flex: 1;
+}
+
+.room-fields .field {
+  margin-bottom: 0;
+}
+
+.field-hint-inline {
+  display: block;
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 0.25rem;
+}
+
+.roof-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.roof-fields .field {
+  margin-bottom: 0;
+}
+
+.btn-remove {
+  padding: 0.25rem 0.5rem;
+  background: #fee;
+  border: 1px solid #fcc;
+  border-radius: 4px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: #c33;
+}
+
+.btn-remove:hover {
+  background: #fdd;
+}
+
+.btn-submit {
+  padding: 0.75rem 1.5rem;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-submit:hover {
+  background: #222;
+}
+
+/* Material list */
+.material-list {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.material-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.material-list h2 {
+  font-size: 1.25rem;
+  margin: 0;
+  color: #333;
+}
+
+.print-header {
+  display: none;
+}
+
+.print-header-banner {
+  display: none;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-export {
+  padding: 0.5rem 1rem;
+  background: #444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.btn-export:hover {
+  background: #333;
+}
+
+@media print {
+  .app-header,
+  .project-form,
+  .app-footer,
+  .export-buttons {
+    display: none !important;
+  }
+
+  .print-header {
+    display: block !important;
+    margin-bottom: 1rem;
+  }
+
+  .print-header-banner {
+    display: block !important;
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    margin-bottom: 0.5rem;
+  }
+
+  .print-header h1 {
+    font-size: 1.25rem;
+    margin: 0 0 0.25rem 0;
+  }
+
+  .print-header p {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0;
+  }
+
+  .disclaimer-box {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    break-inside: avoid;
+  }
+
+  .material-list {
+    border: none;
+    padding: 0;
+  }
+
+  .material-list-header {
+    margin-bottom: 0.5rem;
+  }
+
+  body {
+    background: white;
+  }
+}
+
+.material-list table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.material-list th,
+.material-list td {
+  text-align: left;
+  padding: 0.5rem 1rem 0.5rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.material-list th {
+  font-weight: 600;
+  color: #555;
+}
+
+.col-qty {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.material-list .desc {
+  display: block;
+}
+
+.material-list .notes {
+  display: block;
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 0.15rem;
+}
+
+.project-name-input {
+  width: 100%;
+  max-width: 320px;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.validation-error {
+  padding: 0.75rem 1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 4px;
+  color: #991b1b;
+  font-size: 0.9rem;
+}
+
+.sill-hint {
+  font-size: 0.75rem;
+  color: #888;
+  white-space: nowrap;
+}
+
+.disclaimer-box {
+  margin-top: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: #fef9c3;
+  border: 1px solid #fde047;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #713f12;
 }
 
 .app-footer {
@@ -76,4 +464,92 @@ body {
 
 .app-footer a:hover {
   text-decoration: underline;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .app {
+    padding: 1rem;
+  }
+
+  .app-main {
+    padding: 1.25rem;
+  }
+
+  .app-banner {
+    max-width: 100%;
+  }
+
+  .room-row {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .room-fields {
+    width: 100%;
+  }
+
+  .dimension-inputs input {
+    min-width: 3rem;
+    padding: 0.6rem;
+    font-size: 16px; /* prevents zoom on iOS */
+  }
+
+  .opening-row {
+    gap: 0.5rem;
+  }
+
+  .opening-row input {
+    min-width: 2.5rem;
+    padding: 0.6rem;
+    font-size: 16px;
+  }
+
+  .project-name-input {
+    max-width: 100%;
+    padding: 0.6rem;
+    font-size: 16px;
+  }
+
+  .field select {
+    min-width: 100%;
+    padding: 0.6rem;
+  }
+
+  .btn-add,
+  .btn-submit,
+  .btn-export {
+    padding: 0.65rem 1rem;
+    min-height: 44px; /* touch-friendly */
+  }
+
+  .btn-remove {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .material-list-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .export-buttons {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .export-buttons button {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .radio-group label {
+    padding: 0.5rem 0;
+  }
+
+  .radio-group input[type='radio'] {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
 }
