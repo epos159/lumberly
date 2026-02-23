@@ -54,12 +54,22 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
   const numJoists = Math.ceil(runIn / floorSpacing) + 1
   const joistLengthFt = Math.ceil(toFeet(spanIn + 6) / 2) * 2 || 10
   const hasSecondFloor = input.includeSecondFloor === true
+  const floorSpanFt = toFeet(spanIn)
+
+  // Span warning: 2x10 typical max ~15–16' at 16" OC, ~18' at 12" OC
+  const floorSpanLimit = floorSpacing === 12 ? 18 : floorSpacing === 24 ? 13 : 15
+  const floorSpanWarning =
+    floorSpanFt > floorSpanLimit + 1
+      ? ` Span ${floorSpanFt.toFixed(1)}' may exceed 2x10 capacity—verify IRC span tables or consider LVL.`
+      : floorSpanFt > floorSpanLimit
+        ? ' Verify span against IRC span tables.'
+        : ''
 
   materials.push({
     description: `2x10 x ${joistLengthFt}' ${hasSecondFloor ? '1st floor ' : ''}floor joists`,
     quantity: numJoists,
     unit: 'pcs',
-    notes: `${floorSpacing}" OC, span table dependent`,
+    notes: `${floorSpacing}" OC, span table dependent.${floorSpanWarning}`.trim(),
   })
 
   // Rim/band joist - perimeter (PT when at grade)
@@ -69,6 +79,14 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
     quantity: Math.ceil(perimeterFt),
     unit: 'lin ft',
     notes: ptRim ? 'Pressure-treated, at grade' : input.isAddition ? '3 walls (addition)' : undefined,
+  })
+
+  // PT sill plate - always on foundation
+  materials.push({
+    description: '2x6 PT sill plate',
+    quantity: Math.ceil(perimeterFt),
+    unit: 'lin ft',
+    notes: 'Pressure-treated, full perimeter on foundation',
   })
 
   // Subfloor - 4x8 sheets
@@ -89,7 +107,7 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
       description: `2x10 x ${joistLengthFt}' 2nd floor joists`,
       quantity: numJoists,
       unit: 'pcs',
-      notes: `${floorSpacing}" OC, span table dependent`,
+      notes: `${floorSpacing}" OC, span table dependent.${floorSpanWarning}`.trim(),
     })
     materials.push({
       description: '2x10 2nd floor rim joist',
@@ -125,6 +143,16 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
   // Exterior plates (2x6, double top) - 6 courses for 2-story vs 3 for 1-story
   const exteriorPlateCourses = hasSecondFloor ? 6 : 3
   const exteriorPlateLinealFt = perimeterFt * exteriorPlateCourses
+  // Wall sheathing - exterior walls only
+  const wallAreaSqFt = perimeterFt * maxCeilingHeight * (hasSecondFloor ? 2 : 1)
+  const wallSheets = Math.ceil((wallAreaSqFt * wasteFactor) / sheetArea)
+  materials.push({
+    description: `4x8 OSB/plywood exterior wall sheathing`,
+    quantity: wallSheets,
+    unit: 'sheets',
+    notes: `7/16"–1/2", ~${wastePct}% waste, ${hasSecondFloor ? '2 stories' : '1 story'}`,
+  })
+
   materials.push({
     description: `2x6 x 8' exterior top & bottom plates`,
     quantity: Math.ceil(exteriorPlateLinealFt / 8),
@@ -228,11 +256,21 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
     const rafterLengthFt = rafterRunFt * mult
     const rafterLengthOrder = Math.ceil(rafterLengthFt / 2) * 2 || 10
 
+    // Rafter span warning: half-span for gable
+    const rafterHalfSpanFt = roof.roofType === 'gable' ? spanDimFt / 2 : spanDimFt
+    const rafterSpanLimit = roof.rafterSize === '2x6' ? 12 : roof.rafterSize === '2x8' ? 15 : 18
+    const rafterSpanWarning =
+      rafterHalfSpanFt > rafterSpanLimit + 1
+        ? `. Half-span ${rafterHalfSpanFt.toFixed(1)}' may exceed ${roof.rafterSize}—verify IRC span tables`
+        : rafterHalfSpanFt > rafterSpanLimit
+          ? '. Verify span against IRC span tables'
+          : ''
+
     materials.push({
       description: `${roof.rafterSize} x ${rafterLengthOrder}' rafters`,
       quantity: rafterCount,
       unit: 'pcs',
-      notes: `${roof.roofType}, ${roof.pitch}/12, ${roofSpacing}" OC${roof.reverseGable ? ', reverse gable' : ''}`,
+      notes: `${roof.roofType}, ${roof.pitch}/12, ${roofSpacing}" OC${roof.reverseGable ? ', reverse gable' : ''}${rafterSpanWarning}`.trim(),
     })
 
     if (roof.roofType === 'gable' && roof.ridgeBoard) {

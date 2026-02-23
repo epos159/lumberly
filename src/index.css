@@ -461,6 +461,15 @@ body {
   color: #713f12;
 }
 
+.disclaimer-box a {
+  color: #92400e;
+  font-weight: 600;
+}
+
+.disclaimer-box a:hover {
+  text-decoration: underline;
+}
+
 .app-footer {
   margin-top: 2rem;
   text-align: center;

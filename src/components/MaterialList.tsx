@@ -50,6 +50,14 @@ export default function MaterialList({ materials, projectName }: MaterialListPro
       </table>
       <div className="disclaimer-box">
         <strong>Estimate only.</strong> Verify against plans and applicable code (e.g. IRC span tables).
+        Sizes assume #2 SYP or equivalent—verify for species and grade.{' '}
+        <a
+          href="https://awc.org/resources/span-options-calculator-for-wood-joists-and-rafters/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          AWC Span Calculator
+        </a>
       </div>
     </section>
   )
