@@ -322,7 +322,7 @@ function loadState(): FormState {
   try {
     const s = localStorage.getItem(STORAGE_KEY)
     if (s) {
-      const parsed = JSON.parse(s) as Partial<FormState>
+      const parsed = JSON.parse(s) as Partial<FormState> & { studSpacing?: number }
       const def = getDefaultState()
       const rooms: Room[] = Array.isArray(parsed.rooms) && parsed.rooms.length > 0
         ? parsed.rooms.map((r: Room) => ({
