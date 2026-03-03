@@ -6,8 +6,35 @@ interface MaterialListProps {
   projectName?: string
 }
 
+/** Group materials by zone for summary (floor, walls, ceiling, second-floor) */
+function buildZoneSummary(materials: MaterialItem[]) {
+  const zoneOrder: Array<'floor' | 'walls' | 'ceiling' | 'second-floor'> = [
+    'floor',
+    'walls',
+    'ceiling',
+    'second-floor',
+  ]
+  const byZone = new Map<string, Array<{ description: string; qty: number; unit: string }>>()
+  for (const m of materials) {
+    if (!m.zone) continue
+    if (!byZone.has(m.zone)) byZone.set(m.zone, [])
+    byZone.get(m.zone)!.push({ description: m.description, qty: m.quantity, unit: m.unit })
+  }
+  return { byZone, zoneOrder }
+}
+
+const ZONE_LABELS: Record<string, string> = {
+  floor: 'Floor',
+  walls: 'Walls',
+  ceiling: 'Ceiling / Roof',
+  'second-floor': 'Second floor (floor/ceiling separation)',
+}
+
 export default function MaterialList({ materials, projectName }: MaterialListProps) {
   if (materials.length === 0) return null
+
+  const { byZone, zoneOrder } = buildZoneSummary(materials)
+  const hasZoneSummary = byZone.size > 0
 
   return (
     <section className="material-list">
@@ -48,6 +75,30 @@ export default function MaterialList({ materials, projectName }: MaterialListPro
           ))}
         </tbody>
       </table>
+      {hasZoneSummary && (
+        <div className="lumber-summary">
+          <h3>Breakdown by zone</h3>
+          <p className="lumber-summary-hint">
+            If a package looks light, check which zone might be missing.
+          </p>
+          {zoneOrder.filter((z) => byZone.has(z)).map((zone) => (
+            <div key={zone} className="zone-section">
+              <h4>{ZONE_LABELS[zone]}</h4>
+              <table>
+                <tbody>
+                  {(byZone.get(zone) ?? []).map((row, i) => (
+                    <tr key={`${zone}-${i}`}>
+                      <td>{row.description}</td>
+                      <td className="col-qty">{row.qty}</td>
+                      <td>{row.unit}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
+        </div>
+      )}
       <div className="disclaimer-box">
         <strong>Estimate only.</strong> Verify against plans and applicable code (e.g. IRC span tables).
         Sizes assume #2 SYP or equivalent—verify for species and grade.{' '}

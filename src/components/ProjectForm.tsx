@@ -113,15 +113,16 @@ function RoomRow({
             onChange={(e) =>
               onChange({
                 ...room,
-                partitionWalls: parseInt(e.target.value, 10) as 0 | 1 | 2,
+                partitionWalls: parseInt(e.target.value, 10) as 0 | 1 | 2 | 3,
               })
             }
           >
             <option value={0}>0 (all exterior)</option>
             <option value={1}>1</option>
             <option value={2}>2</option>
+            <option value={3}>3 (e.g. bathroom)</option>
           </select>
-          <span className="field-hint-inline">walls shared with other rooms</span>
+          <span className="field-hint-inline">1–2 shared with other rooms; 3 = enclosed room</span>
         </div>
       </div>
       {canRemove && (

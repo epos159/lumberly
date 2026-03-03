@@ -451,6 +451,48 @@ body {
   white-space: nowrap;
 }
 
+.lumber-summary {
+  margin-top: 1.5rem;
+  padding: 1rem 0;
+  border-top: 1px solid #e5e7eb;
+}
+
+.lumber-summary h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.lumber-summary-hint {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+}
+
+.lumber-summary table {
+  font-size: 0.9rem;
+}
+
+.lumber-summary .zone-section {
+  margin-bottom: 1rem;
+}
+
+.lumber-summary .zone-section:last-child {
+  margin-bottom: 0;
+}
+
+.lumber-summary .zone-section h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.35rem;
+}
+
+.lumber-summary .zone-section table {
+  margin-left: 0.5rem;
+}
+
 .disclaimer-box {
   margin-top: 1.5rem;
   padding: 1rem 1.25rem;

@@ -16,7 +16,7 @@ export interface Room {
   widthFt: number
   widthIn: number
   ceilingHeightFt: number
-  partitionWalls: 0 | 1 | 2
+  partitionWalls: 0 | 1 | 2 | 3
 }
 
 export interface Opening {
@@ -79,6 +79,8 @@ export interface MaterialItem {
   quantity: number
   unit: string
   notes?: string
+  /** Zone for summary grouping: floor, walls, ceiling, second-floor */
+  zone?: 'floor' | 'walls' | 'ceiling' | 'second-floor'
 }
 
 export interface TakeoffResult {

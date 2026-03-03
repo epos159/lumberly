@@ -16,14 +16,17 @@ function toFeet(inches: number): number {
 
 /**
  * Estimate partition wall lineal feet for a room
- * 0 partitions = 0, 1 partition = one typical wall (shorter dimension), 2 = corner (L+W)
+ * 0 = none, 1 = one wall (shorter dim), 2 = corner (L+W) shared with other rooms,
+ * 3 = three walls enclosing room (e.g. bathroom); fourth side existing
  */
 function partitionLinealFt(room: Room): number {
   const lengthFt = room.lengthFt + room.lengthIn / 12
   const widthFt = room.widthFt + room.widthIn / 12
   if (room.partitionWalls === 0) return 0
   if (room.partitionWalls === 1) return Math.min(lengthFt, widthFt)
-  return lengthFt + widthFt
+  if (room.partitionWalls === 2) return lengthFt + widthFt
+  // 3 walls: two of one dimension, one of the other (one side existing)
+  return 2 * Math.min(lengthFt, widthFt) + Math.max(lengthFt, widthFt)
 }
 
 /**
@@ -70,6 +73,7 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
     quantity: numJoists,
     unit: 'pcs',
     notes: `${floorSpacing}" OC, span table dependent.${floorSpanWarning}`.trim(),
+    zone: 'floor',
   })
 
   // Rim/band joist - perimeter (PT when at grade)
@@ -79,6 +83,7 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
     quantity: Math.ceil(perimeterFt),
     unit: 'lin ft',
     notes: ptRim ? 'Pressure-treated, at grade' : input.isAddition ? '3 walls (addition)' : undefined,
+    zone: 'floor',
   })
 
   // PT sill plate - always on foundation
@@ -87,6 +92,7 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
     quantity: Math.ceil(perimeterFt),
     unit: 'lin ft',
     notes: 'Pressure-treated, full perimeter on foundation',
+    zone: 'floor',
   })
 
   // Subfloor - 4x8 sheets
@@ -99,6 +105,7 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
     quantity: numSheets,
     unit: 'sheets',
     notes: `3/4" T&G, ~${wastePct}% waste`,
+    zone: 'floor',
   })
 
   // Second floor framing
@@ -108,18 +115,21 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
       quantity: numJoists,
       unit: 'pcs',
       notes: `${floorSpacing}" OC, span table dependent.${floorSpanWarning}`.trim(),
+      zone: 'second-floor',
     })
     materials.push({
       description: '2x10 2nd floor rim joist',
       quantity: Math.ceil(perimeterFt),
       unit: 'lin ft',
       notes: input.isAddition ? '3 walls (addition)' : undefined,
+      zone: 'second-floor',
     })
     materials.push({
       description: '4x8 OSB/plywood 2nd floor subfloor',
       quantity: numSheets,
       unit: 'sheets',
       notes: `3/4" T&G, ~${wastePct}% waste`,
+      zone: 'second-floor',
     })
   }
 
@@ -138,6 +148,7 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
     notes: input.isAddition
       ? `${wallSpacing}" OC, ${hasSecondFloor ? '2 stories, 3 walls (addition)' : '3 walls (addition)'}`
       : `${wallSpacing}" OC, ${hasSecondFloor ? '2 stories' : 'perimeter'}`,
+    zone: 'walls',
   })
 
   // Exterior plates (2x6, double top) - 6 courses for 2-story vs 3 for 1-story
@@ -151,6 +162,7 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
     quantity: wallSheets,
     unit: 'sheets',
     notes: `7/16"–1/2", ~${wastePct}% waste, ${hasSecondFloor ? '2 stories' : '1 story'}`,
+    zone: 'walls',
   })
 
   materials.push({
@@ -158,11 +170,17 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
     quantity: Math.ceil(exteriorPlateLinealFt / 8),
     unit: 'pcs',
     notes: input.isAddition ? `Double top plate, ${hasSecondFloor ? '2 stories, ' : ''}3 walls (addition)` : hasSecondFloor ? 'Double top plate, 2 stories' : 'Double top plate',
+    zone: 'walls',
   })
 
-  // Partition walls (2x4) - each partition counted by 2 rooms, so divide by 2; double for 2-story
-  const totalPartitionLinealFt =
-    input.rooms.reduce((sum, r) => sum + partitionLinealFt(r), 0) / 2
+  // Partition walls (2x4) - shared partitions (1,2) counted by 2 rooms so /2; 3-wall rooms (e.g. bathroom) count full lineal
+  const sharedLinealFt = input.rooms
+    .filter((r) => r.partitionWalls === 1 || r.partitionWalls === 2)
+    .reduce((sum, r) => sum + partitionLinealFt(r), 0)
+  const enclosedLinealFt = input.rooms
+    .filter((r) => r.partitionWalls === 3)
+    .reduce((sum, r) => sum + partitionLinealFt(r), 0)
+  const totalPartitionLinealFt = sharedLinealFt / 2 + enclosedLinealFt
   if (totalPartitionLinealFt > 0) {
     const partitionStudCount = Math.ceil((totalPartitionLinealFt * 12) / wallSpacing) + 4
     const partitionMultiplier = hasSecondFloor ? 2 : 1
@@ -171,6 +189,7 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
       quantity: partitionStudCount * partitionMultiplier,
       unit: 'pcs',
       notes: `${wallSpacing}" OC, interior partitions${hasSecondFloor ? ', 2 stories' : ''}`,
+      zone: 'walls',
     })
     const partitionPlateCourses = hasSecondFloor ? 6 : 3
     const partitionPlateLinealFt = totalPartitionLinealFt * partitionPlateCourses
@@ -179,6 +198,7 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
       quantity: Math.ceil(partitionPlateLinealFt / 8),
       unit: 'pcs',
       notes: hasSecondFloor ? 'Double top plate, 2 stories' : 'Double top plate',
+      zone: 'walls',
     })
   }
 
@@ -195,11 +215,13 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
       quantity: 2 * qty,
       unit: 'pcs',
       notes: `Two 2x12s, ${headerLength}" rough`,
+      zone: 'walls',
     })
     materials.push({
       description: `  King studs (2) + Jack studs (2)`,
       quantity: 4 * qty,
       unit: 'pcs',
+      zone: 'walls',
     })
     if (sillHeightIn > 0) {
       const cripplesBelow = Math.ceil(openingWidthIn / wallSpacing) + 1
@@ -209,11 +231,13 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
         quantity: cripplesBelow * qty,
         unit: 'pcs',
         notes: `Sill ${opening.sillHeightFt ?? 0}'${opening.sillHeightIn ?? 0}" from floor`,
+        zone: 'walls',
       })
       materials.push({
         description: `  2x4 sill plate`,
         quantity: Math.ceil(toFeet(sillPlateLength) * qty),
         unit: 'lin ft',
+        zone: 'walls',
       })
     }
   }
@@ -271,6 +295,7 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
       quantity: rafterCount,
       unit: 'pcs',
       notes: `${roof.roofType}, ${roof.pitch}/12, ${roofSpacing}" OC${roof.reverseGable ? ', reverse gable' : ''}${rafterSpanWarning}`.trim(),
+      zone: 'ceiling',
     })
 
     if (roof.roofType === 'gable' && roof.ridgeBoard) {
@@ -279,6 +304,7 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
         description: `${ridgeSize} ridge board`,
         quantity: Math.ceil(ridgeLengthFt),
         unit: 'lin ft',
+        zone: 'ceiling',
       })
     }
 
@@ -294,6 +320,7 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
       quantity: roofSheets,
       unit: 'sheets',
       notes: `~${roofWastePct}% waste`,
+      zone: 'ceiling',
     })
 
     if (roof.ceilingType === 'flat') {
@@ -305,6 +332,7 @@ export function calculateTakeoff(input: ProjectInput): MaterialItem[] {
         quantity: joistCount,
         unit: 'pcs',
         notes: `${roofSpacing}" OC, flat ceiling`,
+        zone: 'ceiling',
       })
     }
   }
