@@ -104,6 +104,8 @@ function RoomRow({
             <option value={11}>11′</option>
             <option value={11.5}>11′6″</option>
             <option value={12}>12′</option>
+            <option value={14}>14′</option>
+            <option value={16}>16′</option>
           </select>
         </div>
         <div className="field">
