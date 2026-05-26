@@ -47,10 +47,10 @@ export default function MaterialList({ materials, projectName }: MaterialListPro
         <h2>Material list{projectName ? ` – ${projectName}` : ''}</h2>
         <div className="export-buttons">
           <button type="button" className="btn-export" onClick={() => exportToCsv(materials, projectName)}>
-            Export to CSV
+            Download (Excel / CSV)
           </button>
           <button type="button" className="btn-export" onClick={exportToPdf}>
-            Export to PDF
+            Print / Save as PDF
           </button>
         </div>
       </div>

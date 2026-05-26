@@ -532,23 +532,6 @@ export default function ProjectForm({ onSubmit }: ProjectFormProps) {
       )}
 
       <fieldset className="form-section">
-        <legend>Rooms</legend>
-        {rooms.map((room, index) => (
-          <RoomRow
-            key={room.id}
-            room={room}
-            index={index}
-            onRemove={() => removeRoom(room.id)}
-            onChange={updateRoom}
-            canRemove={rooms.length > 1}
-          />
-        ))}
-        <button type="button" className="btn-add" onClick={addRoom}>
-          + Add room
-        </button>
-      </fieldset>
-
-      <fieldset className="form-section">
         <legend>Structure type</legend>
         <div className="radio-group">
           <label>
@@ -598,6 +581,23 @@ export default function ProjectForm({ onSubmit }: ProjectFormProps) {
       </fieldset>
 
       <fieldset className="form-section">
+        <legend>Rooms</legend>
+        {rooms.map((room, index) => (
+          <RoomRow
+            key={room.id}
+            room={room}
+            index={index}
+            onRemove={() => removeRoom(room.id)}
+            onChange={updateRoom}
+            canRemove={rooms.length > 1}
+          />
+        ))}
+        <button type="button" className="btn-add" onClick={addRoom}>
+          + Add room
+        </button>
+      </fieldset>
+
+      <fieldset className="form-section">
         <legend>Overall footprint</legend>
         <p className="field-hint">Used for floor framing (joists, subfloor, rim). Auto-filled from Room 1 when single room.</p>
         <div className="radio-group" style={{ marginBottom: '1rem' }}>
@@ -628,7 +628,7 @@ export default function ProjectForm({ onSubmit }: ProjectFormProps) {
       </fieldset>
 
       <fieldset className="form-section">
-        <legend>Framing spacing</legend>
+        <legend>Framing</legend>
         <div className="spacing-grid">
           <div className="field">
             <label>Floor joists</label>
@@ -654,45 +654,44 @@ export default function ProjectForm({ onSubmit }: ProjectFormProps) {
               <option value={24}>24″ OC</option>
             </select>
           </div>
+          <div className="field">
+            <label>Waste factor</label>
+            <select
+              id="waste-factor"
+              value={wasteFactorPct}
+              onChange={(e) => setWasteFactorPct(parseInt(e.target.value, 10))}
+            >
+              <option value={5}>5%</option>
+              <option value={10}>10% (default)</option>
+              <option value={15}>15%</option>
+              <option value={20}>20%</option>
+            </select>
+            <span className="field-hint-inline">For subfloor &amp; sheathing</span>
+          </div>
         </div>
-        <div className="field" style={{ marginTop: '0.75rem' }}>
-          <label htmlFor="waste-factor">Waste factor</label>
-          <select
-            id="waste-factor"
-            value={wasteFactorPct}
-            onChange={(e) => setWasteFactorPct(parseInt(e.target.value, 10))}
-          >
-            <option value={5}>5%</option>
-            <option value={10}>10% (default)</option>
-            <option value={15}>15%</option>
-            <option value={20}>20%</option>
-          </select>
-          <span className="field-hint-inline">For subfloor &amp; roof sheathing</span>
-        </div>
-      </fieldset>
-
-      <fieldset className="form-section">
-        <legend>Joist direction</legend>
-        <p className="field-hint">Joists run perpendicular to span (typically the short dimension)</p>
-        <div className="radio-group">
-          <label>
-            <input
-              type="radio"
-              name="joistDirection"
-              checked={joistDirection === 'along-width'}
-              onChange={() => setJoistDirection('along-width')}
-            />
-            Along width (span length)
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="joistDirection"
-              checked={joistDirection === 'along-length'}
-              onChange={() => setJoistDirection('along-length')}
-            />
-            Along length (span width)
-          </label>
+        <div className="field" style={{ marginTop: '1rem' }}>
+          <label>Joist direction</label>
+          <p className="field-hint">Joists run perpendicular to span (typically the short dimension)</p>
+          <div className="radio-group">
+            <label>
+              <input
+                type="radio"
+                name="joistDirection"
+                checked={joistDirection === 'along-width'}
+                onChange={() => setJoistDirection('along-width')}
+              />
+              Along width (span length)
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="joistDirection"
+                checked={joistDirection === 'along-length'}
+                onChange={() => setJoistDirection('along-length')}
+              />
+              Along length (span width)
+            </label>
+          </div>
         </div>
       </fieldset>
 
