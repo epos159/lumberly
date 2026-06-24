@@ -737,21 +737,123 @@ body {
   margin-top: 0.75rem;
 }
 
-/* Interior wall rows */
-.beta-interior-wall-row {
+/* Measure guide diagram */
+.beta-measure-guide {
   display: flex;
-  align-items: flex-end;
-  gap: 0.75rem;
+  gap: 1.25rem;
   flex-wrap: wrap;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.beta-measure-legend {
+  flex: 1;
+  min-width: 200px;
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+.beta-measure-legend li {
+  margin-bottom: 0.35rem;
+  list-style: none;
+  position: relative;
+  margin-left: -0.5rem;
+}
+
+.beta-legend-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  margin-right: 0.4rem;
+  vertical-align: middle;
+}
+
+.beta-legend-red {
+  background: #dc2626;
+}
+
+.beta-legend-blue {
+  background: #2563eb;
+}
+
+.beta-legend-fill {
+  background: #fecaca;
+  border: 1px solid #fca5a5;
+}
+
+.beta-zone-number {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.beta-floor-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.beta-story-inputs-compact {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.beta-rooms-block {
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.beta-room-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.75rem;
   margin-bottom: 0.75rem;
-  padding: 0.75rem 1rem;
-  background: #f9fafb;
+  background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
 }
 
-.beta-interior-wall-row .field {
-  margin-bottom: 0;
+.beta-room-row .room-fields {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.beta-room-name-input {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  width: 10rem;
+}
+
+.beta-inherited-note {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  margin: 0;
+  font-size: 0.85rem;
+  color: #1e40af;
+}
+
+.beta-diff-size-toggle {
+  margin-bottom: 0.25rem;
 }
 
 /* Sticky submit bar */
@@ -799,8 +901,16 @@ body {
     font-size: 16px;
   }
 
-  .beta-interior-wall-row {
-    gap: 0.5rem;
+  .beta-story-inputs-compact {
+    grid-template-columns: 1fr;
+  }
+
+  .beta-measure-guide {
+    flex-direction: column;
+  }
+
+  .beta-room-row {
+    flex-direction: column;
   }
 
   .beta-submit-bar {

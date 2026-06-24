@@ -1,4 +1,4 @@
-import type { BetaInput, BetaZone, BetaStory } from '../betaTypes'
+import type { BetaInput, BetaStory, BetaRoom } from '../betaTypes'
 import type { MaterialItem } from '../types'
 
 function toInches(ft: number): number {
@@ -13,10 +13,72 @@ function ceilLinFt(ft: number): number {
   return Math.ceil(ft)
 }
 
-/**
- * Floor framing for one story slab (joists, rim, subfloor)
- * Uses measured area + exterior LF instead of a rectangle.
- */
+function roomLengthFt(room: BetaRoom): number {
+  return room.lengthFt + room.lengthIn / 12
+}
+
+function roomWidthFt(room: BetaRoom): number {
+  return room.widthFt + room.widthIn / 12
+}
+
+function partitionLinealFt(room: BetaRoom): number {
+  const lengthFt = roomLengthFt(room)
+  const widthFt = roomWidthFt(room)
+  if (room.partitionWalls === 0) return 0
+  if (room.partitionWalls === 1) return Math.min(lengthFt, widthFt)
+  if (room.partitionWalls === 2) return lengthFt + widthFt
+  return 2 * Math.min(lengthFt, widthFt) + Math.max(lengthFt, widthFt)
+}
+
+/** Resolve 2nd-floor dimensions when inheriting from 1st floor */
+export function effectiveStory(story: BetaStory, firstFloor?: BetaStory): BetaStory {
+  if (firstFloor && story.differentSize === false) {
+    return {
+      ...story,
+      areaSqFt: firstFloor.areaSqFt,
+      exteriorWallLf: firstFloor.exteriorWallLf,
+    }
+  }
+  return story
+}
+
+function storyPartitionItems(
+  rooms: BetaRoom[],
+  ceilingHeightFt: number,
+  label: string,
+  wallSpacingIn: number,
+  isSecond: boolean,
+): MaterialItem[] {
+  const items: MaterialItem[] = []
+  const sharedLinealFt = rooms
+    .filter((r) => r.partitionWalls === 1 || r.partitionWalls === 2)
+    .reduce((sum, r) => sum + partitionLinealFt(r), 0)
+  const enclosedLinealFt = rooms
+    .filter((r) => r.partitionWalls === 3)
+    .reduce((sum, r) => sum + partitionLinealFt(r), 0)
+  const totalPartitionLinealFt = sharedLinealFt / 2 + enclosedLinealFt
+  if (totalPartitionLinealFt <= 0) return items
+
+  const prefix = isSecond ? `${label} 2nd floor ` : `${label} `
+  const studCount = Math.ceil((totalPartitionLinealFt * 12) / wallSpacingIn) + 4
+  items.push({
+    description: `2x4 x ${ceilingHeightFt}' ${prefix}partition studs`,
+    quantity: studCount,
+    unit: 'pcs',
+    notes: `${wallSpacingIn}" OC, interior partitions`,
+    zone: isSecond ? 'second-floor' : 'walls',
+  })
+  const plateLinealFt = totalPartitionLinealFt * 3
+  items.push({
+    description: `2x4 x 8' ${prefix}partition plates`,
+    quantity: Math.ceil(plateLinealFt / 8),
+    unit: 'pcs',
+    notes: 'Double top plate',
+    zone: isSecond ? 'second-floor' : 'walls',
+  })
+  return items
+}
+
 function storyFloorItems(
   story: BetaStory,
   tieInLf: number,
@@ -24,18 +86,12 @@ function storyFloorItems(
   floorSpacingIn: number,
   wasteFactor: number,
   ptRim: boolean,
-  _joistDirection: 'along-length' | 'along-width',
-  _zone: BetaZone,
   isSecond: boolean,
 ): MaterialItem[] {
   const items: MaterialItem[] = []
   const { areaSqFt, exteriorWallLf } = story
 
-  // Joist span: estimate from area / exterior LF as a rough average width
-  // For a rectangle: area = span × run, run ≈ exteriorWallLf / 2
-  // For irregular shapes, this is an approximation. User measures area + LF from plan.
-  const perimeterTotal = exteriorWallLf + tieInLf // full enclosing perimeter including tie-in
-  // Estimate one span dimension: area / (perimeter/2) ≈ narrower dimension
+  const perimeterTotal = exteriorWallLf + tieInLf
   const avgSpanFt = perimeterTotal > 0 ? areaSqFt / (perimeterTotal / 2) : 0
   const avgRunFt = perimeterTotal > 0 ? perimeterTotal / 2 : 0
 
@@ -45,7 +101,6 @@ function storyFloorItems(
   const numJoists = runIn > 0 ? Math.ceil(runIn / floorSpacingIn) + 1 : 0
   const joistLengthFt = Math.ceil(toFeet(spanIn + 6) / 2) * 2 || 10
 
-  // Span warning
   const floorSpanLimit = floorSpacingIn === 12 ? 18 : floorSpacingIn === 24 ? 13 : 15
   const spanWarning = avgSpanFt > floorSpanLimit + 1
     ? ` Span ~${avgSpanFt.toFixed(1)}' may exceed 2x10—verify IRC span tables or consider LVL.`
@@ -63,7 +118,6 @@ function storyFloorItems(
     zone: isSecond ? 'second-floor' : 'floor',
   })
 
-  // Rim / band — exterior LF only (tie-in side not framed)
   const rimLf = ceilLinFt(exteriorWallLf)
   items.push({
     description: `2x10 ${ptRim ? 'PT ' : ''}${prefix}rim joist`,
@@ -74,7 +128,6 @@ function storyFloorItems(
   })
 
   if (!isSecond) {
-    // PT sill — full perimeter (exterior + tie-in)
     items.push({
       description: '2x6 PT sill plate',
       quantity: ceilLinFt(perimeterTotal),
@@ -84,9 +137,7 @@ function storyFloorItems(
     })
   }
 
-  // Subfloor
-  const sheetArea = 32
-  const numSheets = Math.ceil((areaSqFt * wasteFactor) / sheetArea)
+  const numSheets = Math.ceil((areaSqFt * wasteFactor) / 32)
   items.push({
     description: `4x8 OSB/plywood ${prefix}subfloor`,
     quantity: numSheets,
@@ -98,10 +149,6 @@ function storyFloorItems(
   return items
 }
 
-/**
- * Wall framing for one story (studs, plates, sheathing)
- * Uses exterior LF directly — no derived perimeter from a rectangle.
- */
 function storyWallItems(
   story: BetaStory,
   label: string,
@@ -122,7 +169,6 @@ function storyWallItems(
     zone: 'walls',
   })
 
-  // Plates: bottom + double top = 3 courses
   const platePcs = Math.ceil((exteriorWallLf * 3) / 8)
   items.push({
     description: `2x6 x 8' ${prefix}exterior top & bottom plates`,
@@ -132,10 +178,8 @@ function storyWallItems(
     zone: 'walls',
   })
 
-  // Wall sheathing
   const wallAreaSqFt = exteriorWallLf * ceilingHeightFt
-  const sheetArea = 32
-  const wallSheets = Math.ceil((wallAreaSqFt * wasteFactor) / sheetArea)
+  const wallSheets = Math.ceil((wallAreaSqFt * wasteFactor) / 32)
   items.push({
     description: `4x8 OSB/plywood ${prefix}exterior wall sheathing`,
     quantity: wallSheets,
@@ -145,6 +189,23 @@ function storyWallItems(
   })
 
   return items
+}
+
+function processStory(
+  story: BetaStory,
+  tieInLf: number,
+  label: string,
+  floorSpacingIn: number,
+  wallSpacingIn: number,
+  wasteFactor: number,
+  ptRim: boolean,
+  isSecond: boolean,
+): MaterialItem[] {
+  const materials: MaterialItem[] = []
+  materials.push(...storyFloorItems(story, tieInLf, label, floorSpacingIn, wasteFactor, ptRim, isSecond))
+  materials.push(...storyWallItems(story, label, wallSpacingIn, wasteFactor, isSecond))
+  materials.push(...storyPartitionItems(story.rooms, story.ceilingHeightFt, label, wallSpacingIn, isSecond))
+  return materials
 }
 
 export function calculateBetaTakeoff(input: BetaInput): MaterialItem[] {
@@ -158,59 +219,15 @@ export function calculateBetaTakeoff(input: BetaInput): MaterialItem[] {
   for (const zone of input.zones) {
     const label = input.zones.length > 1 ? zone.name : ''
 
-    // First floor
-    materials.push(...storyFloorItems(
-      zone.firstFloor,
-      zone.tieInLf,
-      label,
-      floorSpacingIn,
-      wasteFactor,
-      ptRim,
-      input.joistDirection,
-      zone,
-      false,
-    ))
-    materials.push(...storyWallItems(zone.firstFloor, label, wallSpacingIn, wasteFactor, false))
+    const first = zone.firstFloor
+    materials.push(...processStory(first, zone.tieInLf, label, floorSpacingIn, wallSpacingIn, wasteFactor, ptRim, false))
 
-    // Second floor (if present)
-    if (zone.secondFloor) {
-      materials.push(...storyFloorItems(
-        zone.secondFloor,
-        0, // second floor doesn't add sill
-        label,
-        floorSpacingIn,
-        wasteFactor,
-        false,
-        input.joistDirection,
-        zone,
-        true,
-      ))
-      materials.push(...storyWallItems(zone.secondFloor, label, wallSpacingIn, wasteFactor, true))
+    if (zone.hasSecondFloor && zone.secondFloor) {
+      const second = effectiveStory(zone.secondFloor, first)
+      materials.push(...processStory(second, 0, label, floorSpacingIn, wallSpacingIn, wasteFactor, false, true))
     }
   }
 
-  // Interior walls (partition LF)
-  for (const wall of input.interiorWalls) {
-    if (wall.lf <= 0) continue
-    const studCount = Math.ceil(toInches(wall.lf) / input.wallSpacing) + 2
-    const platePcs = Math.ceil((wall.lf * 3) / 8)
-    materials.push({
-      description: `${wall.size} x ${wall.heightFt}' partition studs`,
-      quantity: studCount,
-      unit: 'pcs',
-      notes: `${input.wallSpacing}" OC, ${wall.lf} LF`,
-      zone: 'walls',
-    })
-    materials.push({
-      description: `${wall.size} x 8' partition plates`,
-      quantity: platePcs,
-      unit: 'pcs',
-      notes: 'Double top plate',
-      zone: 'walls',
-    })
-  }
-
-  // Openings
   for (const opening of input.openings) {
     const qty = opening.quantity || 1
     const openingWidthIn = opening.widthFt * 12 + opening.widthIn
@@ -243,10 +260,8 @@ export function calculateBetaTakeoff(input: BetaInput): MaterialItem[] {
     }
   }
 
-  // Roof framing
   if (input.roof?.includeRoof) {
     const roof = input.roof
-    // Use first zone first floor for span; if multiple zones, note limitation
     const primaryZone = input.zones[0]
     if (primaryZone) {
       const story = primaryZone.firstFloor
