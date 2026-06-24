@@ -59,6 +59,36 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+.seo-intro {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.seo-intro h2 {
+  font-size: 1.1rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.seo-intro p {
+  color: #555;
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+}
+
+.seo-intro ul {
+  padding-left: 1.25rem;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.seo-intro li + li {
+  margin-top: 0.25rem;
+}
+
 /* Form */
 .project-form {
   display: flex;
@@ -538,6 +568,246 @@ body {
   text-decoration: underline;
 }
 
+/* ── Beta page ─────────────────────────────────────────── */
+.beta-badge {
+  display: inline-block;
+  background: #f59e0b;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.4rem;
+}
+
+.beta-banner {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 6px;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9rem;
+  color: #78350f;
+  margin-bottom: 1rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.beta-banner a {
+  color: #92400e;
+  font-weight: 600;
+}
+
+/* Zone card */
+.beta-zone-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.beta-zone-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.beta-zone-name-input {
+  flex: 1;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  background: white;
+}
+
+/* Tie-in field */
+.beta-tiein-field {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+/* Story section divider */
+.beta-story-section {
+  margin-top: 0.5rem;
+}
+
+.beta-story-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+}
+
+/* Story fields: diagram + inputs side by side */
+.beta-story-fields {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.beta-diagram-col {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.beta-svg-diagram {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+}
+
+.beta-diagram-caption {
+  font-size: 0.78rem;
+  color: #6b7280;
+  text-align: center;
+  max-width: 220px;
+  line-height: 1.4;
+}
+
+.beta-story-inputs {
+  flex: 1;
+  min-width: 220px;
+}
+
+/* Inline input + unit label */
+.beta-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.beta-number-input {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 8rem;
+}
+
+.beta-unit-label {
+  font-size: 0.9rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+/* 2nd floor section */
+.beta-second-floor {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 2px dashed #c4b5fd;
+}
+
+.beta-second-floor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.beta-remove-link {
+  background: none;
+  border: none;
+  color: #dc2626;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.beta-remove-link:hover {
+  color: #991b1b;
+}
+
+.beta-add-second {
+  margin-top: 0.75rem;
+}
+
+/* Interior wall rows */
+.beta-interior-wall-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+.beta-interior-wall-row .field {
+  margin-bottom: 0;
+}
+
+/* Sticky submit bar */
+.beta-submit-bar {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  padding: 0.75rem 0;
+  margin-top: 1.5rem;
+  z-index: 10;
+}
+
+.beta-submit-bar .btn-submit {
+  width: 100%;
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .beta-zone-card {
+    padding: 1rem;
+  }
+
+  .beta-story-fields {
+    flex-direction: column;
+  }
+
+  .beta-diagram-col {
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .beta-svg-diagram {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .beta-number-input {
+    width: 7rem;
+    font-size: 16px;
+  }
+
+  .beta-zone-name-input {
+    font-size: 16px;
+  }
+
+  .beta-interior-wall-row {
+    gap: 0.5rem;
+  }
+
+  .beta-submit-bar {
+    padding: 0.75rem 0;
+  }
+}
+
 /* Mobile responsiveness */
 @media (max-width: 640px) {
   .app {
@@ -547,6 +817,10 @@ body {
   .app-main {
     padding: 1rem;
     border-radius: 6px;
+  }
+
+  .seo-intro {
+    padding: 0.9rem 1rem;
   }
 
   .app-banner {
